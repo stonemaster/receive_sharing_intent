@@ -8,7 +8,8 @@
 import UIKit
 import Social
 import MobileCoreServices
-import Photos
+// import Photos
+import UniformTypeIdentifiers
 
 @available(swift, introduced: 5.0)
 open class RSIShareViewController: SLComposeServiceViewController {
@@ -74,12 +75,12 @@ open class RSIShareViewController: SLComposeServiceViewController {
                                                          index: index,
                                                          content: content)
                                     }
-                                    else if let image = data as? UIImage {
-                                        this.handleMedia(forUIImage: image,
-                                                         type: type,
-                                                         index: index,
-                                                         content: content)
-                                    }
+                                    // else if let image = data as? UIImage {
+                                    //     this.handleMedia(forUIImage: image,
+                                    //                      type: type,
+                                    //                      index: index,
+                                    //                      content: content)
+                                    // }
                                 }
                             }
                             break
@@ -128,51 +129,51 @@ open class RSIShareViewController: SLComposeServiceViewController {
         }
     }
 
-    private func handleMedia(forUIImage image: UIImage, type: SharedMediaType, index: Int, content: NSExtensionItem){
-        let tempPath = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId)!.appendingPathComponent("TempImage.png")
-        if self.writeTempFile(image, to: tempPath) {
-            let newPathDecoded = tempPath.absoluteString.removingPercentEncoding!
-            sharedMedia.append(SharedMediaFile(
-                path: newPathDecoded,
-                mimeType: type == .image ? "image/png": nil,
-                type: type
-            ))
-        }
-        if index == (content.attachments?.count ?? 0) - 1 {
-            if shouldAutoRedirect() {
-                saveAndRedirect()
-            }
-        }
-    }
+    // private func handleMedia(forUIImage image: UIImage, type: SharedMediaType, index: Int, content: NSExtensionItem){
+    //     let tempPath = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId)!.appendingPathComponent("TempImage.png")
+    //     if self.writeTempFile(image, to: tempPath) {
+    //         let newPathDecoded = tempPath.absoluteString.removingPercentEncoding!
+    //         sharedMedia.append(SharedMediaFile(
+    //             path: newPathDecoded,
+    //             mimeType: type == .image ? "image/png": nil,
+    //             type: type
+    //         ))
+    //     }
+    //     if index == (content.attachments?.count ?? 0) - 1 {
+    //         if shouldAutoRedirect() {
+    //             saveAndRedirect()
+    //         }
+    //     }
+    // }
     
     private func handleMedia(forFile url: URL, type: SharedMediaType, index: Int, content: NSExtensionItem) {
         let fileName = getFileName(from: url, type: type)
         let newPath = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroupId)!.appendingPathComponent(fileName)
-        
+    
         if copyFile(at: url, to: newPath) {
             // The path should be decoded because Flutter is not expecting url encoded file names
             let newPathDecoded = newPath.absoluteString.removingPercentEncoding!;
-            if type == .video {
-                // Get video thumbnail and duration
-                if let videoInfo = getVideoInfo(from: url) {
-                    let thumbnailPathDecoded = videoInfo.thumbnail?.removingPercentEncoding;
-                    sharedMedia.append(SharedMediaFile(
-                        path: newPathDecoded,
-                        mimeType: url.mimeType(),
-                        thumbnail: thumbnailPathDecoded,
-                        duration: videoInfo.duration,
-                        type: type
-                    ))
-                }
-            } else {
+            // if type == .video {
+            //     // Get video thumbnail and duration
+            //     if let videoInfo = getVideoInfo(from: url) {
+            //         let thumbnailPathDecoded = videoInfo.thumbnail?.removingPercentEncoding;
+            //         sharedMedia.append(SharedMediaFile(
+            //             path: newPathDecoded,
+            //             mimeType: url.mimeType(),
+            //             thumbnail: thumbnailPathDecoded,
+            //             duration: videoInfo.duration,
+            //             type: type
+            //         ))
+            //     }
+            // } else {
                 sharedMedia.append(SharedMediaFile(
                     path: newPathDecoded,
                     mimeType: url.mimeType(),
                     type: type
                 ))
-            }
+            // }
         }
-        
+    
         if index == (content.attachments?.count ?? 0) - 1 {
             if shouldAutoRedirect() {
                 saveAndRedirect()
@@ -274,30 +275,30 @@ open class RSIShareViewController: SLComposeServiceViewController {
         return true
     }
     
-    private func getVideoInfo(from url: URL) -> (thumbnail: String?, duration: Double)? {
-        let asset = AVAsset(url: url)
-        let duration = (CMTimeGetSeconds(asset.duration) * 1000).rounded()
-        let thumbnailPath = getThumbnailPath(for: url)
-        
-        if FileManager.default.fileExists(atPath: thumbnailPath.path) {
-            return (thumbnail: thumbnailPath.absoluteString, duration: duration)
-        }
-        
-        var saved = false
-        let assetImgGenerate = AVAssetImageGenerator(asset: asset)
-        assetImgGenerate.appliesPreferredTrackTransform = true
-        //        let scale = UIScreen.main.scale
-        assetImgGenerate.maximumSize =  CGSize(width: 360, height: 360)
-        do {
-            let img = try assetImgGenerate.copyCGImage(at: CMTimeMakeWithSeconds(600, preferredTimescale: 1), actualTime: nil)
-            try UIImage(cgImage: img).pngData()?.write(to: thumbnailPath)
-            saved = true
-        } catch {
-            saved = false
-        }
-        
-        return saved ? (thumbnail: thumbnailPath.absoluteString, duration: duration): nil
-    }
+    // private func getVideoInfo(from url: URL) -> (thumbnail: String?, duration: Double)? {
+    //     let asset = AVAsset(url: url)
+    //     let duration = (CMTimeGetSeconds(asset.duration) * 1000).rounded()
+    //     let thumbnailPath = getThumbnailPath(for: url)
+    //
+    //     if FileManager.default.fileExists(atPath: thumbnailPath.path) {
+    //         return (thumbnail: thumbnailPath.absoluteString, duration: duration)
+    //     }
+    //
+    //     var saved = false
+    //     let assetImgGenerate = AVAssetImageGenerator(asset: asset)
+    //     assetImgGenerate.appliesPreferredTrackTransform = true
+    //     //        let scale = UIScreen.main.scale
+    //     assetImgGenerate.maximumSize =  CGSize(width: 360, height: 360)
+    //     do {
+    //         let img = try assetImgGenerate.copyCGImage(at: CMTimeMakeWithSeconds(600, preferredTimescale: 1), actualTime: nil)
+    //         try UIImage(cgImage: img).pngData()?.write(to: thumbnailPath)
+    //         saved = true
+    //     } catch {
+    //         saved = false
+    //     }
+    //
+    //     return saved ? (thumbnail: thumbnailPath.absoluteString, duration: duration): nil
+    // }
     
     private func getThumbnailPath(for url: URL) -> URL {
         let fileName = Data(url.lastPathComponent.utf8).base64EncodedString().replacingOccurrences(of: "==", with: "")

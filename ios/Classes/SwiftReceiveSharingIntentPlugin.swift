@@ -1,6 +1,7 @@
 import Flutter
 import UIKit
-import Photos
+// import Photos
+import UniformTypeIdentifiers
 
 public let kSchemePrefix = "ShareMedia"
 public let kUserDefaultsKey = "ShareKey"
@@ -161,31 +162,30 @@ public class SwiftReceiveSharingIntentPlugin: NSObject, FlutterPlugin, FlutterSt
             return identifier.replacingOccurrences(of: "file://", with: "")
         }
         
-        guard let phAsset = PHAsset.fetchAssets(
-            withLocalIdentifiers: [identifier],
-            options: .none).firstObject else {
-            return nil
-        }
+        // guard let phAsset = PHAsset.fetchAssets(
+        //     withLocalIdentifiers: [identifier],
+        //     options: .none).firstObject else {
+        //     return nil
+        // }
         
-        let (url, _) = getFullSizeImageURLAndOrientation(for: phAsset)
-        return url
-        
+        //let (url, _) = getFullSizeImageURLAndOrientation(for: phAsset)
+        return nil
     }
     
-    private func getFullSizeImageURLAndOrientation(for asset: PHAsset)-> (String?, Int) {
-        var url: String? = nil
-        var orientation: Int = 0
-        let semaphore = DispatchSemaphore(value: 0)
-        let options2 = PHContentEditingInputRequestOptions()
-        options2.isNetworkAccessAllowed = true
-        asset.requestContentEditingInput(with: options2){(input, info) in
-            orientation = Int(input?.fullSizeImageOrientation ?? 0)
-            url = input?.fullSizeImageURL?.path
-            semaphore.signal()
-        }
-        semaphore.wait()
-        return (url, orientation)
-    }
+    // private func getFullSizeImageURLAndOrientation(for asset: PHAsset)-> (String?, Int) {
+    //     var url: String? = nil
+    //     var orientation: Int = 0
+    //     let semaphore = DispatchSemaphore(value: 0)
+    //     let options2 = PHContentEditingInputRequestOptions()
+    //     options2.isNetworkAccessAllowed = true
+    //     asset.requestContentEditingInput(with: options2){(input, info) in
+    //         orientation = Int(input?.fullSizeImageOrientation ?? 0)
+    //         url = input?.fullSizeImageURL?.path
+    //         semaphore.signal()
+    //     }
+    //     semaphore.wait()
+    //     return (url, orientation)
+    // }
     
     private func decode(data: Data) -> [SharedMediaFile] {
         let encodedData = try? JSONDecoder().decode([SharedMediaFile].self, from: data)
@@ -237,22 +237,22 @@ public enum SharedMediaType: String, Codable, CaseIterable {
     case url
 
     public var toUTTypeIdentifier: String {
-        if #available(iOS 14.0, *) {
-            switch self {
-            case .image:
-                return UTType.image.identifier
-            case .video:
-                return UTType.movie.identifier
-            case .text:
-                return UTType.text.identifier
-    //         case .audio:
-    //             return UTType.audio.identifier
-            case .file:
-                return UTType.fileURL.identifier
-            case .url:
-                return UTType.url.identifier
-            }
-        }
+         if #available(iOS 14.0, *) {
+             switch self {
+             case .image:
+                 return UTType.image.identifier
+             case .video:
+                 return UTType.movie.identifier
+             case .text:
+                 return UTType.text.identifier
+     //         case .audio:
+     //             return UTType.audio.identifier
+             case .file:
+                 return UTType.fileURL.identifier
+             case .url:
+                 return UTType.url.identifier
+             }
+         }
         switch self {
         case .image:
             return "public.image"
